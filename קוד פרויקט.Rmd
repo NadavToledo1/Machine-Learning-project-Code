@@ -1,0 +1,312 @@
+---
+title: "final projact"
+output: html_document
+date: "2023-06-06"
+---
+
+```{r load-packages, message = FALSE, include = FALSE}
+library(knitr)
+library(tidyverse)
+library(broom)
+library(htmltools)
+library(tinytex)
+library(latexpdf)
+library(scales)
+library(tidyr)
+library(dplyr)
+library(haven)
+library(tidymodels)
+```
+
+```{r}
+df <- read_sav("C:/Users/nadav/Downloads/proposal template (1)/proposal/child_risk.sav")
+```
+
+# הגדרת שתי טבלאות אחת אלו עם קשר לאיזה שהוא גורם חיצוני ואחת ללא קשר והוספת עמודה בינארית האם קיים קשר או לא
+```{r, message = FALSE}
+df_a <- df %>%
+  select(ID, T3_welfare_service_1_1_2,T3_welfare_service_1_1_3,T3_welfare_service_1_1_4,T3_welfare_service_1_1_5,T3_welfare_service_1_2_2,T3_welfare_service_1_2_3,T3_welfare_service_1_2_4,T3_welfare_service_1_2_5,T3_welfare_service_1_3_2,T3_welfare_service_1_3_3,T3_welfare_service_1_3_4,T3_welfare_service_1_3_5,T3_welfare_service_1_4_2,T3_welfare_service_1_4_3,T3_welfare_service_1_4_4,T3_welfare_service_1_4_5,T3_welfare_service_1_5_2,T3_welfare_service_1_5_3,T3_welfare_service_1_5_4,T3_welfare_service_1_5_5,T3_welfare_service_1_6_2,T3_welfare_service_1_6_3,T3_welfare_service_1_6_4,T3_welfare_service_1_6_5,T3_welfare_service_1_7_2,T3_welfare_service_1_7_3,T3_welfare_service_1_7_4,T3_welfare_service_1_7_5,T3_welfare_service_1_8_2,T3_welfare_service_1_8_3,T3_welfare_service_1_8_4,T3_welfare_service_1_8_5,T3_welfare_service_1_9_2,T3_welfare_service_1_9_3,T3_welfare_service_1_9_4,T3_welfare_service_1_9_5,T3_welfare_service_1_10_2,T3_welfare_service_1_10_3,T3_welfare_service_1_10_4,T3_welfare_service_1_10_5,T3_welfare_service_1_11_2,T3_welfare_service_1_11_3,T3_welfare_service_1_11_4,T3_welfare_service_1_11_5,T3_welfare_service_1_12_2,T3_welfare_service_1_12_3,T3_welfare_service_1_12_4,T3_welfare_service_1_12_5)
+#אלו עם קשר
+df_connection <- df_a[rowSums(df_a == 1, na.rm = TRUE) > 0, ]
+df_connection <-df_connection%>%
+     mutate(connection = 1)
+#אלו בלי קשר
+df_not_connection <- anti_join(df, df_connection)%>%
+       mutate(connection = 0)
+
+df_connection_1 <- full_join(df_not_connection,df_connection)
+#עם עמודה של connection
+df_connection <- inner_join(df_connection_1%>%select(ID,connection),df,by="ID")
+df_connection
+```
+
+#הוספת עמודה בינארית המתארת קשר עם גורמי רווחה או חינוך 
+```{r, message = FALSE}
+
+df_welfare_service <- df_connection %>%
+  select(ID,T3_welfare_service_1_1_2,T3_welfare_service_1_1_3,T3_welfare_service_1_1_4,T3_welfare_service_1_1_5,T3_welfare_service_1_2_2,T3_welfare_service_1_2_3,T3_welfare_service_1_2_4,T3_welfare_service_1_2_5,T3_welfare_service_1_6_2,T3_welfare_service_1_6_3,T3_welfare_service_1_6_4,T3_welfare_service_1_6_5,T3_welfare_service_1_10_2,T3_welfare_service_1_10_3,T3_welfare_service_1_10_4,T3_welfare_service_1_10_5)
+
+df_welfare_service <- df_welfare_service[rowSums(df_welfare_service == 1, na.rm = TRUE) > 0, ]
+df_welfare_service <- inner_join(df_connection,df_welfare_service)
+df_welfare_service <-df_welfare_service%>%
+     mutate(welfare_service = 1)
+
+df_not_welfare_service <- anti_join(df_connection, df_welfare_service)%>%
+       mutate(welfare_service = 0)
+
+df_welfare_service_1 <- full_join(df_not_welfare_service,df_welfare_service)
+
+df_connection <- inner_join(df_welfare_service_1%>%select(ID,connection,welfare_service),df,by="ID")
+
+```
+
+#הוספת עמודה בינארית המתארת קשר עם גורמים טיפוליים  
+```{r, message = FALSE}
+
+df_care <- df_connection %>%
+  select(ID,T3_welfare_service_1_3_2,T3_welfare_service_1_3_3,T3_welfare_service_1_3_4,T3_welfare_service_1_3_5,T3_welfare_service_1_4_2,T3_welfare_service_1_4_3,T3_welfare_service_1_4_4,T3_welfare_service_1_4_5,T3_welfare_service_1_5_2,T3_welfare_service_1_5_3,T3_welfare_service_1_5_4,T3_welfare_service_1_5_5,T3_welfare_service_1_7_2,T3_welfare_service_1_7_3,T3_welfare_service_1_7_4,T3_welfare_service_1_7_5)
+
+df_care <- df_care[rowSums(df_care == 1, na.rm = TRUE) > 0, ]
+df_care <- inner_join(df_connection,df_care)
+
+df_care <-df_care%>%
+     mutate(care = 1)
+
+df_not_care <- anti_join(df_connection, df_care)%>%
+       mutate(care = 0)
+
+df_care_1 <- full_join(df_not_care,df_care)
+
+df_connection <- inner_join(df_care_1%>%select(ID,connection,welfare_service,care),df,by="ID")
+
+```
+
+# הוספת עמודה בינארית המתארת קשר עם גורמי מדינה
+```{r, message = FALSE}
+
+df_state <- df_connection %>%
+  select(ID,T3_welfare_service_1_8_2,T3_welfare_service_1_8_3,T3_welfare_service_1_8_4,T3_welfare_service_1_8_5,T3_welfare_service_1_9_2,T3_welfare_service_1_9_3,T3_welfare_service_1_9_4,T3_welfare_service_1_9_5,T3_welfare_service_1_11_2,T3_welfare_service_1_11_3,T3_welfare_service_1_11_4,T3_welfare_service_1_11_5)
+
+df_state <- df_state[rowSums(df_state == 1, na.rm = TRUE) > 0, ]
+df_state <- inner_join(df_connection,df_state)
+
+df_state <-df_state%>%
+     mutate(state = 1)
+
+df_not_state <- anti_join(df_connection, df_state)%>%
+       mutate(state = 0)
+
+df_state_1 <- full_join(df_not_state,df_state)
+
+df_connection <- inner_join(df_state_1%>%select(ID,connection,welfare_service,care,state),df,by="ID")
+```
+#הוספת עמודות בינאריות לחלוקה לפי זמני הקשר 
+```{r, message = FALSE}
+
+df_time <- df_connection %>%
+  select(ID,T3_welfare_service_1_1_2,T3_welfare_service_1_2_2,T3_welfare_service_1_3_2,T3_welfare_service_1_4_2,T3_welfare_service_1_5_2,T3_welfare_service_1_6_2,T3_welfare_service_1_7_2,T3_welfare_service_1_8_2,T3_welfare_service_1_9_2,T3_welfare_service_1_10_2,T3_welfare_service_1_11_2,T3_welfare_service_1_12_2,T3_welfare_service_1_1_3,T3_welfare_service_1_2_3,T3_welfare_service_1_3_3,T3_welfare_service_1_4_3,T3_welfare_service_1_5_3,T3_welfare_service_1_6_3,T3_welfare_service_1_7_3,T3_welfare_service_1_8_3,T3_welfare_service_1_9_3,T3_welfare_service_1_10_3,T3_welfare_service_1_11_3,T3_welfare_service_1_12_3)
+
+df_time <- df_time[rowSums(df_time == 1, na.rm = TRUE) > 0, ]
+df_time <- inner_join(df_connection,df_time)
+df_time <-df_time%>%
+     mutate(time_1 = 1)
+
+df_not_time <- anti_join(df_connection, df_time)%>%
+       mutate(time_1 = 0)
+
+df_time_1 <- full_join(df_not_time,df_time)
+
+df_connection <- inner_join(df_time_1%>%select(ID,connection,welfare_service,care,state,time_1),df,by="ID")
+
+
+df_time <- df_connection %>%
+  select(ID,T3_welfare_service_1_1_4,T3_welfare_service_1_2_4,T3_welfare_service_1_3_4,T3_welfare_service_1_4_4,T3_welfare_service_1_5_4,T3_welfare_service_1_6_4,T3_welfare_service_1_7_4,T3_welfare_service_1_8_4,T3_welfare_service_1_9_4,T3_welfare_service_1_10_4,T3_welfare_service_1_11_4,T3_welfare_service_1_12_4,T3_welfare_service_1_1_5,T3_welfare_service_1_2_5,T3_welfare_service_1_3_5,T3_welfare_service_1_4_5,T3_welfare_service_1_5_5,T3_welfare_service_1_6_5,T3_welfare_service_1_7_5,T3_welfare_service_1_8_5,T3_welfare_service_1_9_5,T3_welfare_service_1_10_5,T3_welfare_service_1_11_5,T3_welfare_service_1_12_5)
+
+df_time <- df_time[rowSums(df_time == 1, na.rm = TRUE) > 0, ]
+df_time <- inner_join(df_connection,df_time)
+df_time <-df_time%>%
+     mutate(time_2 = 1)
+
+df_not_time <- anti_join(df_connection, df_time)%>%
+       mutate(time_2 = 0)
+
+df_time_2 <- full_join(df_not_time,df_time)
+
+df_connection <- inner_join(df_time_2%>%select(ID,connection,welfare_service,care,state,time_1,time_2),df,by="ID")
+df_connection
+
+```
+
+
+
+# מילאנו ערכים חסרים עם הממוצע של כל עמודה ויצרנו מדדים לכל תקופת זמן לכל נער לפי שאלות נבחרות.
+```{r}
+
+df_filled <- df_connection %>%
+  mutate(across(everything(), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+# יצרנו מדדים לפי השאלות החוזרות הרלוונטיות
+df_connection <- df_filled %>% 
+  mutate(madad_1 = (V35.10+V35.11 + V35.12 + V35.17 + V38.4 + V38.5)/6, madad_2 = (B.LIFE.SKILLS.ALL_10 + B.LIFE.SKILLS.ALL_11 + B.LIFE.SKILLS.ALL_12 + B.FUTURE.EXPECT.ALL_1 + B.FUTURE.EXPECT.ALL_2 + B.LONELY_1)/6, madad_3 = (T3_socialsupport_6/5*4 + T3_future_expect_1 + T3_future_expect_2 + T3_skills_10 + T3_skills_11 + T3_skills_12)/6)
+df_connection
+```
+#גרף המציג את השינוי בין זמן1 ל3 במדדים הקו השחור מייצג את הנערים ללא קשר והכחול את אלו עם הקשר
+```{r}
+con <- df_connection$connection
+ggplot(df_connection, aes(x= madad_1, y= madad_3, color = connection)) +
+  geom_point() + 
+  geom_smooth(data = subset(df_connection, con == 1), method = "lm", se = FALSE, color = "blue") +
+  geom_smooth(data = subset(df_connection, con == 0), method = "lm", se = FALSE, color = "black")
+
+```
+
+# משוואה הרגרסיה של המודל מהגרף לעיל של הנערים עם הקשר
+```{r}
+model_1 <- df_connection[df_connection$connection  > 0,]
+model_1 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_3 ~ madad_1, data = model_1) %>%
+  tidy()
+model_1
+print("madad_3 = 3.27 + 0.081*madad_1")
+
+model_1_2 <- df_connection[df_connection$connection  == 0,]
+model_1_2 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_3 ~ madad_1, data = model_1_2) %>%
+  tidy()
+model_1_2
+print("madad_3 = 3.68 -0.03*madad_1")
+```
+
+# גרף המציג את השינוי בין זמן1 ל3 במדדים הקו השחור מייצג את הנערים שבקשר שהוא לא גורם מטפל והכחול את אלו עם הקשר של גורם מטפל
+```{r, message = FALSE}
+model_2 <- df_connection[df_connection$connection  > 0,]
+
+con <- model_2$care
+ggplot(df_connection, aes(x= madad_1, y= madad_3, color = care)) +
+  geom_point() + 
+  geom_smooth(data = subset(model_2, con == 1), method = "lm", se = FALSE, color = "blue") +
+  geom_smooth(data = subset(model_2, con == 0), method = "lm", se = FALSE, color = "black")
+
+
+```
+
+# משוואה הרגרסיה של המודל מהגרף לעיל של הנערים עם הקשר ובלי הקשר לגורם המטפל
+```{r}
+model_2_1 <- model_2[model_2$care  > 0,]
+model_2_1 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_3 ~ madad_1, data = model_2_1) %>%
+  tidy()
+model_2_1
+print("madad_3 = 3.35 + 0.027*madad_1")
+
+model_2_2 <- model_2[model_2$care  == 0,]
+model_2_2 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_3 ~ madad_1, data = model_2_2) %>%
+  tidy()
+model_2_2
+print("madad_3 = 3.31 + 0.079*madad_1")
+```
+
+# גרף המציג את השינוי בין זמן1 ל3 במדדים הקו השחור מייצג את הנערים שבקשר שהוא לא גורם בתוכנית של המדינה והכחול את אלו עם הקשר של גורם בתוכנית של המדינה
+```{r, message = FALSE}
+
+con <- model_2$state
+ggplot(df_connection, aes(x= madad_1, y= madad_3, color = state)) +
+  geom_point() + 
+  geom_smooth(data = subset(model_2, con == 1), method = "lm", se = FALSE, color = "blue") +
+  geom_smooth(data = subset(model_2, con == 0), method = "lm", se = FALSE, color = "black")
+
+
+```
+
+# משוואה הרגרסיה של המודל מהגרף לעיל של הנערים עם הקשר ובלי הקשר לגורם המטפל בתוכנית של המדינה
+```{r}
+model_2_3 <- model_2[model_2$state  > 0,]
+model_2_3 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_3 ~ madad_1, data = model_2_3) %>%
+  tidy()
+model_2_3
+print("madad_3 = 2.77 + 0.22*madad_1")
+
+model_2_4 <- model_2[model_2$state  == 0,]
+model_2_4 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_3 ~ madad_1, data = model_2_4) %>%
+  tidy()
+model_2_4
+print("madad_3 = 3.329 + 0.066*madad_1")
+```
+# גרף המציג את השינוי בין שאלון 1 ל2 במדדים הקו השחור מייצג את הנערים ללא קשר בין השאלונים והכחול את אלו עם הקשר 
+```{r}
+
+con <- df_connection$time_1
+
+ggplot(df_connection, aes(x= madad_1, y= madad_2, color = time_1)) +
+  geom_point() + 
+  geom_smooth(data = subset(df_connection, con == 1), method = "lm", se = FALSE, color = "blue") +
+  geom_smooth(data = subset(df_connection, con == 0), method = "lm", se = FALSE, color = "black")
+
+```
+
+# משוואה הרגרסיה של המודל מהגרף לעיל של הנערים עם הקשר ובלי הקשר בין השאלון הראשון לשני
+```{r}
+model_3 <- df_connection[df_connection$time_1  > 0,]
+model_3 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_2 ~ madad_1, data = model_3) %>%
+  tidy()
+model_3
+print("madad_3 = 2.83 + 0.28*madad_1")
+
+model_3_1 <- df_connection[df_connection$time_1  == 0,]
+model_3_1 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_2 ~ madad_1, data = model_3_1) %>%
+  tidy()
+model_3_1
+print("madad_3 = 2.93 + 0.25*madad_1")
+```
+
+# גרף המציג את השינוי בין שאלון 2 ל3 במדדים הקו השחור מייצג את הנערים ללא קשר בין השאלונים והכחול את אלו עם הקשר 
+```{r}
+con <- df_connection$time_2
+
+ggplot(df_connection, aes(x= madad_2, y= madad_3, color = time_2)) +
+  geom_point() + 
+  geom_smooth(data = subset(df_connection, con == 1), method = "lm", se = FALSE, color = "blue") +
+  geom_smooth(data = subset(df_connection, con == 0), method = "lm", se = FALSE, color = "black")
+
+```
+
+# משוואה הרגרסיה של המודל מהגרף לעיל של הנערים עם הקשר ובלי הקשר בין השאלון השני לשלישי
+```{r}
+model_3_2 <- df_connection[df_connection$time_2  > 0,]
+model_3_2 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_3 ~ madad_2, data = model_3_2) %>%
+  tidy()
+model_3_2
+print("madad_3 = 3.42 + 0.04*madad_1")
+
+model_3_3 <- df_connection[df_connection$time_2  == 0,]
+model_3_3 <- 
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(madad_3 ~ madad_2, data = model_3_3) %>%
+  tidy()
+model_3_3
+print("madad_3 = 3.6 -0.01*madad_1")
+```
