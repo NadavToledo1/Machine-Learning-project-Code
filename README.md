@@ -1,4 +1,4 @@
-**Unsupervised Learning: K-Means Clustering and PCA**
+# Unsupervised Learning: K-Means Clustering and PCA
 
 **Introduction**
 This project focuses on the practical implementation of unsupervised learning methods, specifically K-Means clustering and Principal Component Analysis (PCA). The primary goal is to enhance the understanding and proficiency in applying these algorithms using Python and popular libraries such as Scikit-learn and Matplotlib.
