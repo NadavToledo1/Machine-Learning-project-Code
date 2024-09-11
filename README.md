@@ -1,19 +1,20 @@
-Unsupervised Learning: K-Means Clustering and PCA
-Introduction
+**Unsupervised Learning: K-Means Clustering and PCA**
+
+**Introduction**
 This project focuses on the practical implementation of unsupervised learning methods, specifically K-Means clustering and Principal Component Analysis (PCA). The primary goal is to enhance the understanding and proficiency in applying these algorithms using Python and popular libraries such as Scikit-learn and Matplotlib.
 
-Learning Objectives
+**Learning Objectives**
 Load Local Files: Implement techniques for loading datasets from a local file system into Python.
 Data Visualization: Use various visualization techniques to interpret and present data analysis results effectively.
 K-Means Clustering with Scikit-learn: Apply the K-Means clustering algorithm using Scikit-learn.
 Dimensionality Reduction with PCA: Perform PCA using Scikit-learn for dimensionality reduction.
 Algorithmic Understanding: Develop an understanding of the calculations performed by these algorithms to solve real-world problems.
-Project Structure
+**Project Structure**
 data/: Directory containing the dataset files used for analysis.
 scripts/: Directory containing Python scripts for the implementation of K-means clustering and PCA.
 visualizations/: Folder with plots generated during data visualization and analysis.
 README.md: Project description, setup instructions, and usage.
-Requirements
+**Requirements**
 To run the code, ensure you have the following Python packages installed:
 
 Python 3.x
@@ -23,7 +24,7 @@ Numpy
 Matplotlib
 Seaborn (optional, for advanced visualizations)
 
-Implementation Details
+**Implementation Details**
 1. Loading Local Files
 The dataset is loaded from the local file system using Pandas' read_csv() method. Ensure the file paths are correctly specified in the code.
 
@@ -39,12 +40,12 @@ PCA is applied for dimensionality reduction using Scikit-learn. The results are 
 5. Algorithmic Understanding
 Throughout the implementation, calculations behind K-means and PCA, such as distance measures and eigen decomposition, are explored for deeper understanding.
 
-How to Use
+**How to Use**
 Clone the repository.
 Place the dataset in the data/ directory.
 Run the K-means clustering script
 
-Results
+**Results**
 K-means Clustering: The data is grouped into distinct clusters, and the centroids are visualized.
 PCA: The dataset is reduced to principal components, with the amount of variance explained visualized.
 Conclusion
